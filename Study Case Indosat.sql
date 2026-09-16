@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Description : Monthly Insurance Revenue Recapitulation Report
 -- Purpose     : Calculate total revenue and unique buyer count per month
--- Source Table: insurance_transaction
+-- Source Table: 
 -- =============================================================================
 
 SELECT
@@ -15,7 +15,7 @@ SELECT
   COUNT(DISTINCT msisdn) AS total_buyers
 
 FROM
-  insurance_transaction
+  'data-fintech-prd-do1t.dm_external.sample_insurance_transaction_daily'
 
 -- Group data by transaction month expression
 GROUP BY
@@ -30,7 +30,7 @@ ORDER BY
 -- =============================================================================
 -- Description : Insurance Revenue Performance Report per Brand
 -- Purpose     : Calculate total revenue and unique buyer count by brand
--- Sources     : insurance_whitelist (Table 1) & insurance_transaction (Table 2)
+-- Sources     :  (Table 1) &  (Table 2)
 -- Relation    : INNER JOIN via msisdn column (Phone Number)
 -- =============================================================================
 
@@ -46,12 +46,12 @@ SELECT
   COUNT(DISTINCT t.msisdn) AS total_buyers
 
 FROM
-  insurance_whitelist AS w
+  'data-fintech-prd-do1t.dm_external.sample__daily' AS w
 
 -- Join whitelist data with transactions.
 -- INNER JOIN only retrieves msisdns registered in whitelist AND have transacted.
 INNER JOIN
-  insurance_transaction AS t
+  'data-fintech-prd-do1t.dm_external.sample__daily' AS t
   ON w.msisdn = t.msisdn
 
 -- Group aggregation results by brand name
@@ -68,7 +68,7 @@ ORDER BY
 -- Description : Customer Segmentation (User Lifecycle / RFM Analysis) - Last 90 Days
 -- Purpose     : Classify whitelisted users into transaction behavior segments:
 --               - Never Taker, New Buyer, Repeat Buyer, Lapsing Buyer, Lapsed Buyer
--- Sources      : insurance_whitelist & insurance_transaction
+-- Sources      :  & 
 -- =============================================================================
 
 WITH whitelist_recent AS (
@@ -78,7 +78,7 @@ WITH whitelist_recent AS (
   SELECT
     msisdn,
     MAX(brand_name) AS brand_name -- Take the latest/top brand_name if duplicates exist
-  FROM insurance_whitelist
+  FROM 'data-fintech-prd-do1t.dm_external.sample__daily'
   WHERE dt_id >= CURRENT_DATE - INTERVAL '90 days'
   GROUP BY msisdn
 ),
@@ -91,7 +91,7 @@ txn_recent AS (
     COUNT(DISTINCT transaction_id) AS txn_count_90d,
     MAX(dt_id) AS last_txn_date,
     SUM(COALESCE(insurance_revenue, 0)) AS total_insurance_revenue_90d
-  FROM insurance_transaction
+  FROM 'data-fintech-prd-do1t.dm_external.sample__daily'
   WHERE dt_id >= CURRENT_DATE - INTERVAL '90 days'
   GROUP BY msisdn
 ),
